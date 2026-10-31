@@ -1,0 +1,141 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '20'
+  BACKEND_DIR: ./backend
+  FRONTEND_DIR: ./frontend
+
+jobs:
+  # ==========================================
+  # 1. BUILD & COMPILE (Package dependencies)
+  # ==========================================
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build backend (TypeScript compilation)
+        run: npm run build:backend
+
+      - name: Build frontend (Vite production build)
+        run: npm run build:frontend
+
+  # ==========================================
+  # 2. UNIT TESTS (Verify cart & checkout logic)
+  # ==========================================
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run backend unit tests
+        run: npm run test --workspace=backend
+
+      - name: Run frontend unit tests
+        run: npm run test --workspace=frontend
+
+  # ==========================================
+  # 3. SECURITY & VULNERABILITY SCAN
+  # ==========================================
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run npm audit for vulnerability scan
+        run: npm audit --audit-level=moderate
+
+      - name: Check for exposed secrets
+        run: |
+          echo "🔍 Checking for exposed secrets in codebase..."
+          if grep -r "PAYPAL_CLIENT_SECRET\|JWT_ACCESS_SECRET\|DATABASE_URL" --include="*.ts" --include="*.js" --include="*.json" --exclude-dir=node_modules --exclude-dir=dist . | grep -v ".env.example" | grep -v ".env.local" | grep -v "your_" | grep -v "PLACEHOLDER"; then
+            echo "❌ Potential secrets found in codebase!"
+            exit 1
+          else
+            echo "✅ No exposed secrets detected."
+          fi
+
+  # ==========================================
+  # 4. CODE REVIEW & PEER APPROVAL (PR check)
+  # ==========================================
+  pr-check:
+    runs-on: ubuntu-latest
+    needs: [test, security-scan]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify PR passes all checks
+        run: |
+          echo "✅ All CI checks passed for PR #${{ github.event.pull_request.number }}"
+          echo "📋 Ready for peer review and merge approval."
+
+  # ==========================================
+  # 5. DEPLOY READINESS (Merge to main)
+  # ==========================================
+  deploy-readiness:
+    runs-on: ubuntu-latest
+    needs: [test, security-scan]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify production readiness
+        run: |
+          echo "🚀 Production deployment readiness check:"
+          echo "   ✅ Backend build: passed"
+          echo "   ✅ Frontend build: passed"
+          echo "   ✅ Unit tests: passed"
+          echo "   ✅ Security scan: passed"
+          echo ""
+          echo "📦 Ready for deployment to staging environment."
+          echo "   Next: Deploy to staging → Load testing → UAT → Production cutover"

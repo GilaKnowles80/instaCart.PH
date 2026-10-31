@@ -1,0 +1,116 @@
+export const COMPLIANCE_REQUIREMENTS = {
+    developer: {
+        role: 'developer',
+        requiredDocuments: [
+            'DHSUD License to Sell',
+            'BIR Certificate of Registration',
+            'DTI Permit',
+            "Mayor's Permit",
+            'NBI Clearance',
+            'Tax Certificate',
+            'Temporary License to Sell (Pre-sell)',
+            'Marketing Campaign Materials',
+            'Project Banners and Logos',
+        ],
+        optionalDocuments: [
+            'SEC Registration',
+            'Project Floor Plans',
+            'Environmental Compliance Certificate',
+        ],
+        description: 'Real estate developer compliance requirements for pre-selling projects',
+    },
+    builder: {
+        role: 'builder',
+        requiredDocuments: [
+            'DHSUD License to Sell',
+            'BIR Certificate of Registration',
+            'DTI Permit',
+            "Mayor's Permit",
+            'NBI Clearance',
+            'Tax Certificate',
+            'Temporary License to Sell (Pre-sell)',
+        ],
+        optionalDocuments: [
+            'Contractor License',
+            'Project Portfolio',
+        ],
+        description: 'Builder compliance requirements for construction and pre-selling',
+    },
+    homeowner: {
+        role: 'homeowner',
+        requiredDocuments: ['Valid Government ID', 'Proof of Address'],
+        optionalDocuments: ['Tax Identification Number'],
+        description: 'Homeowner basic verification requirements',
+    },
+    buyer: {
+        role: 'buyer',
+        requiredDocuments: ['Valid Government ID', 'Proof of Address'],
+        optionalDocuments: ['Tax Identification Number', 'Proof of Income'],
+        description: 'Buyer verification for pre-selling purchases',
+    },
+    rem_sales_agent: {
+        role: 'rem_sales_agent',
+        requiredDocuments: [
+            'DHSUD Registration',
+            'Valid Bond',
+            'Real Estate Broker License',
+            'Government ID',
+        ],
+        optionalDocuments: ['Professional ID (PRC)', 'Company Affiliation'],
+        description: 'REMS Sales Agent compliance requirements',
+    },
+    real_estate_agent: {
+        role: 'real_estate_agent',
+        requiredDocuments: [
+            'DHSUD Registration',
+            'Valid Bond',
+            'Real Estate Broker License',
+            'Government ID',
+        ],
+        optionalDocuments: ['Professional ID (PRC)', 'Company Affiliation'],
+        description: 'Real Estate Agent compliance requirements',
+    },
+    seller: {
+        role: 'seller',
+        requiredDocuments: ['Valid Government ID', 'Property Title/Ownership Document'],
+        optionalDocuments: ['Tax Declaration', 'Capital Gains Tax Clearance'],
+        description: 'Seller verification for property listings',
+    },
+    vendor: {
+        role: 'vendor',
+        requiredDocuments: ['Business Permit', 'Government ID'],
+        optionalDocuments: ['BIR Registration', 'DTI/SEC Registration'],
+        description: 'Vendor compliance requirements',
+    },
+    retailer: {
+        role: 'retailer',
+        requiredDocuments: ['Business Permit', 'Government ID'],
+        optionalDocuments: ['BIR Registration', 'DTI/SEC Registration'],
+        description: 'Retailer compliance requirements',
+    },
+    wholesaler: {
+        role: 'wholesaler',
+        requiredDocuments: ['Business Permit', 'Government ID'],
+        optionalDocuments: ['BIR Registration', 'SEC Registration'],
+        description: 'Wholesaler compliance requirements',
+    },
+    delivery_driver: {
+        role: 'delivery_driver',
+        requiredDocuments: ["Driver's License", 'Government ID', 'Vehicle Registration'],
+        optionalDocuments: ['NBI Clearance'],
+        description: 'Delivery driver compliance requirements',
+    },
+    admin: {
+        role: 'admin',
+        requiredDocuments: ['Government ID'],
+        optionalDocuments: [],
+        description: 'Admin verification',
+    },
+    customer: {
+        role: 'customer',
+        requiredDocuments: ['Government ID'],
+        optionalDocuments: [],
+        description: 'Customer verification',
+    },
+};
+//# sourceMappingURL=kyc.types.js.map

@@ -1,0 +1,29 @@
+{
+  "name": "instacart-ph",
+  "version": "1.0.0",
+  "private": true,
+  "description": "instaCart.PH — Full-stack production platform (React frontend + Express backend)",
+  "scripts": {
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "development": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "backend:dev": "npm --prefix backend run dev",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "test": "npm run test --workspace=backend && npm run test --workspace=frontend",
+    "test:backend": "npm run test --workspace=backend",
+    "test:frontend": "npm run test --workspace=frontend",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "cd backend && npm ci && npx tsc",
+    "start": "npm run start:backend",
+    "start:backend": "node backend/dist/server.js",
+    "postinstall": "npm --prefix backend install && npm --prefix frontend install"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "dependencies": {
+    "concurrently": "^10.0.5"
+  },
+  "devDependencies": {}
+}

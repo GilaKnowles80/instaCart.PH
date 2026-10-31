@@ -1,0 +1,15 @@
+{
+    "css.validate": false,
+    "scss.validate": false,
+    "less.validate": false,
+    "javascript.validate.enable": false,
+    "typescript.validate.enable": false,
+    "json.validate.enable": false,
+    "markdownlint.enable": false,
+    "javascript.implicitProjectConfig.exclude": ["**/*.tsx", "**/*.ts"],
+    "typescript.implicitProjectConfig.exclude": ["**/*.tsx", "**/*.ts"],
+    "files.associations": {
+        "*.tsx": "typescriptreact",
+        "*.ts": "typescript"
+    }
+}

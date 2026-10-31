@@ -1,0 +1,4 @@
+export const filterVendorsBySearch = (vendors: any[], query: string) => {
+  if (!query) return vendors;
+  return vendors.filter(v => v.name.toLowerCase().includes(query.toLowerCase()));
+};

@@ -1,0 +1,130 @@
+import { Router } from 'express';
+import { AuthController } from './auth.controller.js';
+import { authenticateToken, authorizeRoles } from './auth.middleware.js';
+import { upload, kycFields } from '../../config/multer.js';
+import { authRateLimiter, passwordRateLimiter } from '../../middleware/rateLimiter.js';
+import {
+  validateBody,
+  validateParams,
+} from '../../middleware/validate.js';
+import {
+  RegisterSchema,
+  LoginSchema,
+  GoogleLoginSchema,
+  ChangeEmailSchema,
+  ChangePasswordSchema,
+  ComplaintSchema,
+  NotificationSchema,
+} from './auth.validation.js';
+
+const router = Router();
+
+// ==========================================
+// Public routes (with rate limiting)
+// ==========================================
+router.post(
+  '/register',
+  authRateLimiter,
+  upload.fields(kycFields.map((f) => ({ name: f, maxCount: 1 }))),
+  validateBody(RegisterSchema),
+  AuthController.register
+);
+router.post(
+  '/login',
+  authRateLimiter,
+  validateBody(LoginSchema),
+  AuthController.login
+);
+router.post(
+  '/google',
+  authRateLimiter,
+  validateBody(GoogleLoginSchema),
+  AuthController.googleLogin
+);
+router.post('/logout', AuthController.logout);
+router.post('/refresh', AuthController.refresh);
+
+// Email confirmation links (public)
+router.get('/confirm-email-change', AuthController.confirmChangeEmail);
+router.post(
+  '/confirm-password-change',
+  validateBody(ChangePasswordSchema),
+  AuthController.confirmPasswordChange
+);
+
+// ==========================================
+// Protected routes
+// ==========================================
+router.get('/me', authenticateToken, AuthController.me);
+router.post(
+  '/kyc',
+  authenticateToken,
+  upload.fields(kycFields.map((f) => ({ name: f, maxCount: 1 }))),
+  AuthController.submitKyc
+);
+router.post(
+  '/request-change-email',
+  authenticateToken,
+  validateBody(ChangeEmailSchema),
+  AuthController.requestChangeEmail
+);
+router.post(
+  '/request-change-password',
+  authenticateToken,
+  passwordRateLimiter,
+  AuthController.requestChangePassword
+);
+router.post(
+  '/complaints',
+  authenticateToken,
+  validateBody(ComplaintSchema),
+  AuthController.submitComplaint
+);
+router.get('/admin-notifications', authenticateToken, AuthController.getAdminNotifications);
+router.post(
+  '/admin-notifications',
+  authenticateToken,
+  validateBody(NotificationSchema),
+  AuthController.createAdminNotification
+);
+router.post(
+  '/admin-notifications/:id/read',
+  authenticateToken,
+  validateParams(ChangeEmailSchema.pick({})),
+  AuthController.markNotificationRead
+);
+
+// ==========================================
+// Admin-only routes
+// ==========================================
+router.get('/users', authenticateToken, authorizeRoles('admin'), AuthController.getAllUsers);
+router.get(
+  '/compliance-records',
+  authenticateToken,
+  authorizeRoles('admin'),
+  AuthController.getComplianceRecords
+);
+router.post(
+  '/compliance-records/:id/approve',
+  authenticateToken,
+  authorizeRoles('admin'),
+  validateParams(ChangeEmailSchema.pick({})),
+  AuthController.approveCompliance
+);
+router.post(
+  '/compliance-records/:id/reject',
+  authenticateToken,
+  authorizeRoles('admin'),
+  validateParams(ChangeEmailSchema.pick({})),
+  AuthController.rejectCompliance
+);
+router.get('/complaints', authenticateToken, authorizeRoles('admin'), AuthController.getComplaints);
+router.post(
+  '/complaints/:id/resolve',
+  authenticateToken,
+  authorizeRoles('admin'),
+  validateParams(ChangeEmailSchema.pick({})),
+  AuthController.resolveComplaint
+);
+
+export default router;
