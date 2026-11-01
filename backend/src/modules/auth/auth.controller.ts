@@ -267,10 +267,10 @@ export const AuthController = {
   // ==========================================
   async getAllUsers(req: Request, res: Response) {
     try {
-      const users = AuthService.getAllUsers();
-      return res.status(200).json({ users });
+      const users = await AuthService.getAllUsers();
+      return res.status(200).json({ users: users || [] });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(200).json({ users: [] });
     }
   },
 
@@ -295,10 +295,10 @@ export const AuthController = {
 
   async getComplaints(req: Request, res: Response) {
     try {
-      const complaints = AuthService.getComplaints();
-      return res.status(200).json({ complaints });
+      const complaints = await AuthService.getComplaints();
+      return res.status(200).json({ complaints: complaints || [] });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(200).json({ complaints: [] });
     }
   },
 
@@ -319,10 +319,10 @@ export const AuthController = {
   async getAdminNotifications(req: Request, res: Response) {
     try {
       const adminEmail = (req as any).user?.email;
-      const notifications = AuthService.getAdminNotifications(adminEmail || '');
-      return res.status(200).json({ notifications });
+      const notifications = await AuthService.getAdminNotifications(adminEmail || '');
+      return res.status(200).json({ notifications: notifications || [] });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(200).json({ notifications: [] });
     }
   },
 

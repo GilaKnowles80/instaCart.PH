@@ -5,12 +5,16 @@ import { QrPayment } from './QrPayment';
 interface CheckoutButtonProps {
   cartItems: ICartItem[];
   userId: string;
-  onSuccess: (txnId: string, paymentMethod: string) => void;
+  customerName: string;
+  customerAddress: string;
+  customerLatitude: number;
+  customerLongitude: number;
+  onSuccess: (order: any) => void;
 }
 
 type PaymentMethod = 'gcash' | 'maya' | 'paypal' | 'cash' | 'qr';
 
-export const CheckoutButton: React.FC<CheckoutButtonProps> = ({ cartItems, userId, onSuccess }) => {
+export const CheckoutButton: React.FC<CheckoutButtonProps> = ({ cartItems, userId, customerName, customerAddress, customerLatitude, customerLongitude, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('paypal');
 
@@ -30,12 +34,23 @@ export const CheckoutButton: React.FC<CheckoutButtonProps> = ({ cartItems, userI
 
     setLoading(true);
     try {
-      const response = await checkoutApi.submitOrder(cartItems, userId, paymentMethod);
+      const response = await checkoutApi.submitOrder(
+        cartItems,
+        userId,
+        customerName,
+        customerAddress,
+        customerLatitude,
+        customerLongitude,
+        50, // deliveryFee
+        5,  // distanceKm
+        10, // ratePerKm
+        paymentMethod
+      );
       if (response.success) {
-        onSuccess(response.transactionId, paymentMethod);
+        onSuccess(response);
       }
     } catch (err: any) {
-      alert('Checkout failed safely: ' + err.message);
+      alert('Checkout failed: ' + err.message);
     } finally {
       setLoading(false);
     }

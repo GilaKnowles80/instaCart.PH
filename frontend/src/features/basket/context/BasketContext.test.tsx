@@ -22,7 +22,7 @@ describe('BasketContext', () => {
     const { result } = renderHook(() => useBasket(), { wrapper });
 
     act(() => {
-      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80 });
+      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80, vendorId: 'vendor_1', vendorName: 'Test Vendor' });
     });
 
     expect(result.current.cart).toHaveLength(1);
@@ -39,8 +39,8 @@ describe('BasketContext', () => {
     const { result } = renderHook(() => useBasket(), { wrapper });
 
     act(() => {
-      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80 });
-      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80 });
+      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80, vendorId: 'vendor_1', vendorName: 'Test Vendor' });
+      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80, vendorId: 'vendor_1', vendorName: 'Test Vendor' });
     });
 
     expect(result.current.cart).toHaveLength(1);
@@ -52,8 +52,8 @@ describe('BasketContext', () => {
     const { result } = renderHook(() => useBasket(), { wrapper });
 
     act(() => {
-      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80 });
-      result.current.addToCart({ id: 'item_2', name: 'Bread', price: 45 });
+      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80, vendorId: 'vendor_1', vendorName: 'Test Vendor' });
+      result.current.addToCart({ id: 'item_2', name: 'Bread', price: 45, vendorId: 'vendor_1', vendorName: 'Test Vendor' });
       result.current.removeFromCart('item_1');
     });
 
@@ -66,7 +66,7 @@ describe('BasketContext', () => {
     const { result } = renderHook(() => useBasket(), { wrapper });
 
     act(() => {
-      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80 });
+      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80, vendorId: 'vendor_1', vendorName: 'Test Vendor' });
       result.current.clearCart();
     });
 
@@ -78,9 +78,9 @@ describe('BasketContext', () => {
     const { result } = renderHook(() => useBasket(), { wrapper });
 
     act(() => {
-      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80 });
-      result.current.addToCart({ id: 'item_2', name: 'Bread', price: 45 });
-      result.current.addToCart({ id: 'item_2', name: 'Bread', price: 45 });
+      result.current.addToCart({ id: 'item_1', name: 'Fresh Milk', price: 80, vendorId: 'vendor_1', vendorName: 'Test Vendor' });
+      result.current.addToCart({ id: 'item_2', name: 'Bread', price: 45, vendorId: 'vendor_1', vendorName: 'Test Vendor' });
+      result.current.addToCart({ id: 'item_2', name: 'Bread', price: 45, vendorId: 'vendor_1', vendorName: 'Test Vendor' });
     });
 
     expect(result.current.getCartTotal()).toBe(170); // 80 + (45 * 2)

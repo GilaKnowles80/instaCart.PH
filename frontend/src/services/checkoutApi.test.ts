@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { checkoutApi, type ICartItem, type ICheckoutResponse } from './checkoutApi.ts';
+import { checkoutApi, type ICartItem, type ICheckoutResponse } from './checkoutApi';
 
 const mockFetch = vi.fn() as ReturnType<typeof vi.fn>;
 
@@ -14,24 +14,35 @@ afterEach(() => {
 
 describe('checkoutApi.submitOrder', () => {
   const cartItems: ICartItem[] = [
-    { id: 'item_1', name: 'Fresh Milk', price: 80, quantity: 2 },
-    { id: 'item_2', name: 'Bread', price: 45, quantity: 1 },
+    { id: 'item_1', productId: 'prod_1', vendorId: 'vendor_1', vendorName: 'Fresh Market', name: 'Fresh Milk', price: 80, quantity: 2 },
+    { id: 'item_2', productId: 'prod_2', vendorId: 'vendor_1', vendorName: 'Fresh Market', name: 'Bread', price: 45, quantity: 1 },
   ];
 
-  it('should POST to the checkout endpoint with correct payload', async () => {
-    const mockResponse: ICheckoutResponse = {
-      success: true,
-      transactionId: 'TXN-ABC123',
-      itemsCount: 3,
-      paymentMethod: 'gcash',
-    };
+  const mockResponse: ICheckoutResponse = {
+    success: true,
+    orderId: 'order_ABC123',
+    itemsCount: 3,
+    paymentMethod: 'gcash',
+  };
 
+  it('should POST to the checkout endpoint with correct payload', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     } as Response);
 
-    const result = await checkoutApi.submitOrder(cartItems, 'user_demo_123', 'gcash');
+    const result = await checkoutApi.submitOrder(
+      cartItems,
+      'user_demo_123',
+      'Demo User',
+      '123 Main St',
+      14.5995,
+      120.9842,
+      50,
+      5,
+      10,
+      'gcash'
+    );
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
     const [url, options] = mockFetch.mock.calls[0];
@@ -47,15 +58,24 @@ describe('checkoutApi.submitOrder', () => {
       json: async () => ({ error: 'Insufficient funds' }),
     } as Response);
 
-    await expect(checkoutApi.submitOrder(cartItems, 'user_demo_123', 'cash')).rejects.toThrow(
-      'Insufficient funds'
-    );
+    await expect(checkoutApi.submitOrder(
+      cartItems,
+      'user_demo_123',
+      'Demo User',
+      '123 Main St',
+      14.5995,
+      120.9842,
+      50,
+      5,
+      10,
+      'cash'
+    )).rejects.toThrow('Insufficient funds');
   });
 
   it('should default payment method to paypal', async () => {
     const mockResponse: ICheckoutResponse = {
       success: true,
-      transactionId: 'TXN-DEF456',
+      orderId: 'order_DEF456',
       itemsCount: 1,
     };
 
@@ -64,7 +84,17 @@ describe('checkoutApi.submitOrder', () => {
       json: async () => mockResponse,
     } as Response);
 
-    await checkoutApi.submitOrder(cartItems.slice(0, 1), 'user_demo_123');
+    await checkoutApi.submitOrder(
+      cartItems.slice(0, 1),
+      'user_demo_123',
+      'Demo User',
+      '123 Main St',
+      14.5995,
+      120.9842,
+      50,
+      5,
+      10
+    );
 
     const [, options] = mockFetch.mock.calls[0];
     const body = JSON.parse(options?.body as string);
@@ -72,8 +102,8 @@ describe('checkoutApi.submitOrder', () => {
   });
 
   it('should export ICartItem and ICheckoutResponse interfaces', () => {
-    const item: ICartItem = { id: '1', name: 'Test', price: 10, quantity: 1 };
-    const response: ICheckoutResponse = { success: true, transactionId: 'TXN-1', itemsCount: 1 };
+    const item: ICartItem = { id: '1', productId: 'prod_1', vendorId: 'vendor_1', vendorName: 'Test', name: 'Test', price: 10, quantity: 1 };
+    const response: ICheckoutResponse = { success: true, orderId: 'TXN-1', itemsCount: 1 };
 
     expect(item.id).toBe('1');
     expect(response.success).toBe(true);

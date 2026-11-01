@@ -6,7 +6,7 @@ if (!DATABASE_URL || !DATABASE_URL.startsWith('postgresql://')) {
 export const sql = neon(DATABASE_URL);
 export const connectDatabase = async () => {
     if (!process.env.DATABASE_URL) {
-        throw new Error('DATABASE_URL is not defined in environment variables. Please check your .env file.');
+        throw new Error('DATABASE_URL is not defined in environment variables.');
     }
     try {
         const result = await sql `SELECT 1 AS connected`;
@@ -22,13 +22,4 @@ export const connectDatabase = async () => {
         process.exit(1);
     }
 };
-export const queryOne = async (strings, ...params) => {
-    const result = await sql(strings, ...params);
-    return result[0] || null;
-};
-export const queryMany = async (strings, ...params) => {
-    const result = await sql(strings, ...params);
-    return result;
-};
-export default { sql, connectDatabase, queryOne, queryMany };
 //# sourceMappingURL=database.js.map

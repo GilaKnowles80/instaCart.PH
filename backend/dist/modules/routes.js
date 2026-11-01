@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { adminAuth } from '../middleware/adminAuth.js';
 import { fraudScanner } from '../middleware/fraudScanner.js';
-import { handleCheckout } from './checkout/checkout.controller.js';
+import { handleCheckout, handleCapturePayment } from './checkout/checkout.controller.js';
 import { validateCoordinates } from './geolocation/geofence.validator.js';
 import { GeofenceService } from './geolocation/geofence.service.js';
 import { PostService } from './posts/post.service.js';
@@ -10,8 +10,10 @@ import authRoutes from './auth/auth.routes.js';
 import oauthRoutes from './auth/oauth.routes.js';
 import paymentsRoutes from './payments/payments.routes.js';
 import orderRoutes from './orders/order.routes.js';
+import deliveryReceiptRoutes from './orders/deliveryReceipt.routes.js';
 import escrowRoutes from './payments/escrow.routes.js';
 import withdrawalRoutes from './payments/withdrawal.routes.js';
+import productRoutes from './products/product.routes.js';
 const apiRouter = Router();
 apiRouter.get('/health', (_req, res) => {
     res.status(200).json({ status: 'OK', message: 'instaCart.PH API is healthy' });
@@ -19,10 +21,13 @@ apiRouter.get('/health', (_req, res) => {
 apiRouter.use('/auth', authRoutes);
 apiRouter.use('/', oauthRoutes);
 apiRouter.post('/checkout', fraudScanner, handleCheckout);
+apiRouter.post('/checkout/capture-payment', fraudScanner, handleCapturePayment);
 apiRouter.use('/payments', paymentsRoutes);
 apiRouter.use('/escrow', escrowRoutes);
 apiRouter.use('/withdrawals', withdrawalRoutes);
 apiRouter.use('/orders', orderRoutes);
+apiRouter.use('/products', productRoutes);
+apiRouter.use('/delivery', deliveryReceiptRoutes);
 apiRouter.post('/geolocation/verify-zone', validateCoordinates, (req, res) => {
     const { latitude, longitude } = req.body;
     const isDeliverable = GeofenceService.isWithinDeliveryZone(latitude, longitude);

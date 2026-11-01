@@ -1,161 +1,125 @@
-import React, { useState, useCallback } from 'react';
-import { useAuth, type IUser } from './features/auth/auth.context';
-import { AuthPage } from './components/auth/AuthPage';
-import { Header } from './components/layout/Header';
-import { Navigation } from './components/layout/Navigation';
-import type { MarketplaceCategory } from './components/layout/Navigation';
-import { Footer } from './components/layout/Footer';
-import { BasketProvider } from './features/basket/context/BasketContext';
-import { MarketplaceGrid } from './features/feed/components/MarketplaceGrid';
-import { BasketDrawer } from './features/basket/components/BasketDrawer';
-import { EnrollmentForm } from './features/vendors/components/EnrollmentForm';
-import { PlatformDashboard } from './features/admin/components/PlatformDashboard';
-import { AdminMonitoringDashboard } from './features/admin/components/AdminMonitoringDashboard';
-import { CustomerDashboard } from './features/customers/components/CustomerDashboard';
-import { VendorDashboard } from './features/vendors/components/VendorDashboard';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { LandingPage } from '@/components/LandingPage';
+import { RoleSelection } from '@/components/auth/RoleSelection';
+import { AuthPage } from '@/components/auth/AuthPage';
+import { VendorCampaigns } from '@/features/vendors/components/VendorCampaigns';
+import { DeliveryTracker } from '@/components/DeliveryTracker';
+import { BookingReport } from '@/features/orders/components/BookingReport';
+import { ThankYouPage } from '@/features/orders/components/ThankYouPage';
+import { BasketPage } from '@/features/basket/components/BasketPage';
+import { SearchPage } from '@/features/search/components/SearchPage';
+import { Layout } from '@/components/layout/Layout';
+import { AuthProvider } from '@/features/auth/auth.context';
 
-type AppTab = 'marketplace' | 'merchant_hub' | 'admin_dashboard' | 'customer_dashboard' | 'vendor_dashboard';
+const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => (
+  <Layout showBack={false} backTo="/">{children}</Layout>
+);
 
 export const App: React.FC = () => {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<AppTab>('marketplace');
-  const [activeCategory, setActiveCategory] = useState<MarketplaceCategory>('All Markets');
-
-  const handleLogout = useCallback(() => {
-    logout();
-    setActiveTab('marketplace');
-  }, [logout]);
-
-  // While auth state is still loading, show a neutral shell
-  if (isLoading) {
-    return (
-      <div style={styles.loadingShell}>
-        <div style={styles.spinner}>Loading session…</div>
-      </div>
-    );
-  }
-
-  // Not authenticated → show the unified auth entry page
-  if (!isAuthenticated || !user) {
-    return (
-      <BasketProvider>
-        <div style={styles.appShell}>
-          <AuthPage onAuthenticated={handleAuthenticated} />
-        </div>
-      </BasketProvider>
-    );
-  }
-
-  // Authenticated → render the role-based dashboard shell
-  const role = user.role;
-  const isAdmin = role === 'admin';
-  const isVendor = role === 'vendor' || role === 'retailer' || role === 'wholesaler';
-  const isCustomer = role === 'customer';
-
   return (
-    <BasketProvider>
-      <div style={styles.appShell}>
-        <Header user={user} onLogout={handleLogout} />
-        <Navigation
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-          isVendor={isVendor}
-          isAdmin={isAdmin}
-          isCustomer={isCustomer}
-          activeTab={activeTab}
-          setActiveTab={(tab: string) => setActiveTab(tab as AppTab)}
+    <Router>
+      <Routes>
+        {/* Route 1: Landing Page - Next goes to Role Selection */}
+        <Route
+          path="/"
+          element={
+            <Layout showBack={false} showNext nextTo="/choose-role" nextLabel="Choose Role →">
+              <LandingPage />
+            </Layout>
+          }
         />
-        <main style={styles.main}>
-          {isCustomer && activeTab === 'customer_dashboard' && <CustomerDashboard />}
-          {isVendor && activeTab === 'vendor_dashboard' && <VendorDashboard />}
-          {isAdmin && activeTab === 'admin_dashboard' && (
-            <AdminMonitoringDashboard token={user.id} />
-          )}
-          {!isCustomer && !isVendor && !isAdmin && (
-            <div style={styles.emptyRole}>
-              <p>No dashboard available for your role.</p>
-              <button type="button" onClick={handleLogout} style={styles.btnLogout}>
-                Sign Out
-              </button>
-            </div>
-          )}
-          {/* Legacy marketplace tabs kept for backward compatibility when not on a role dashboard */}
-          {!isCustomer && !isVendor && !isAdmin && activeTab === 'marketplace' && (
-            <div style={styles.marketplaceLayout}>
-              <MarketplaceGrid selectedCategory={activeCategory} />
-              <div style={styles.stickyBasket}><BasketDrawer /></div>
-            </div>
-          )}
-          {!isCustomer && !isVendor && !isAdmin && activeTab === 'merchant_hub' && <EnrollmentForm />}
-          {!isCustomer && !isVendor && !isAdmin && activeTab === 'admin_dashboard' && <PlatformDashboard />}
-        </main>
-        <Footer />
-      </div>
-    </BasketProvider>
+
+        {/* Route 2: Role Selection - Next goes to Auth */}
+        <Route
+          path="/choose-role"
+          element={
+            <Layout showBack backTo="/" showNext nextTo="/auth?mode=login" nextLabel="Sign In →">
+              <RoleSelection />
+            </Layout>
+          }
+        />
+
+        {/* Route 3: Auth (Sign In / Register) - Next goes to Vendors */}
+        <Route
+          path="/auth"
+          element={
+            <AuthProvider>
+              <Layout showBack backTo="/choose-role" showNext nextTo="/vendors" nextLabel="Browse Vendors →">
+                <AuthPage onAuthenticated={() => {}} />
+              </Layout>
+            </AuthProvider>
+          }
+        />
+
+        {/* Route 4: Vendor Campaigns / Marketplace - Next goes to Customer Dashboard */}
+        <Route
+          path="/vendors"
+          element={
+            <Layout showBack backTo="/choose-role" showNext nextTo="/customer" nextLabel="Customer Dashboard →">
+              <VendorCampaigns />
+            </Layout>
+          }
+        />
+        <Route
+          path="/vendors/category/:category"
+          element={
+            <Layout showBack backTo="/vendors" showNext nextTo="/customer" nextLabel="Customer Dashboard →">
+              <VendorCampaigns />
+            </Layout>
+          }
+        />
+
+        {/* Route 5: Delivery Tracker - Next goes to Booking Report */}
+        <Route
+          path="/delivery/:orderId"
+          element={
+            <Layout showBack backTo="/customer">
+              <DeliveryTracker />
+            </Layout>
+          }
+        />
+
+        {/* Route 6: Booking Report - Next goes to Thank You */}
+        <Route
+          path="/booking-report/:orderId"
+          element={
+            <Layout showBack backTo="/customer">
+              <BookingReport />
+            </Layout>
+          }
+        />
+
+        {/* Route 7: Thank You - Next goes back to Landing Page (unending cycle) */}
+        <Route
+          path="/thank-you/:orderId"
+          element={
+            <Layout showBack backTo="/" showNext nextTo="/" nextLabel="Start New Order →">
+              <ThankYouPage />
+            </Layout>
+          }
+        />
+        
+        {/* Basket */}
+        <Route path="/basket" element={<Layout showBack backTo="/"><BasketPage /></Layout>} />
+        
+        {/* Search */}
+        <Route path="/search" element={<Layout showBack backTo="/"><SearchPage /></Layout>} />
+        
+        {/* Customer Dashboard */}
+        <Route path="/customer" element={<AuthenticatedLayout><CustomerDashboard /></AuthenticatedLayout>} />
+        
+        {/* Vendor Dashboard */}
+        <Route path="/vendor" element={<AuthenticatedLayout><VendorDashboard /></AuthenticatedLayout>} />
+        
+        {/* Driver Dashboard */}
+        <Route path="/driver" element={<AuthenticatedLayout><DriverDashboard /></AuthenticatedLayout>} />
+        
+        {/* Admin Dashboard */}
+        <Route path="/admin" element={<AuthenticatedLayout><AdminMonitoringDashboard /></AuthenticatedLayout>} />
+      </Routes>
+    </Router>
   );
-
-  function handleAuthenticated(userData: { id: string; email: string; role: string }) {
-    setActiveTab(
-      userData.role === 'admin'
-        ? 'admin_dashboard'
-        : userData.role === 'vendor' || userData.role === 'retailer' || userData.role === 'wholesaler'
-          ? 'vendor_dashboard'
-          : 'customer_dashboard'
-    );
-  }
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  appShell: {
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: '100vh',
-    background: '#fcfcfc',
-  },
-  loadingShell: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '100vh',
-    background: '#f4f7f6',
-    fontFamily: 'sans-serif',
-    color: '#6b7c72',
-  },
-  spinner: {
-    fontSize: 16,
-    fontWeight: 600,
-  },
-  main: {
-    flex: 1,
-    width: '100%',
-    maxWidth: 1400,
-    boxSizing: 'border-box',
-    margin: '0 auto',
-    padding: '24px 4%',
-  },
-  marketplaceLayout: {
-    display: 'grid',
-    gridTemplateColumns: 'minmax(0, 1fr) 350px',
-    gap: 30,
-    alignItems: 'start',
-  },
-  stickyBasket: { position: 'sticky', top: 20 },
-  emptyRole: {
-    padding: 40,
-    textAlign: 'center',
-    color: '#6b7c72',
-  },
-  btnLogout: {
-    background: '#e74c3c',
-    color: '#fff',
-    border: 'none',
-    padding: '8px 16px',
-    borderRadius: 6,
-    fontSize: 13,
-    fontWeight: 700,
-    cursor: 'pointer',
-    marginTop: 12,
-  },
 };
 
 export default App;

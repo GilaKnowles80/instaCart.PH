@@ -6,7 +6,7 @@ import { adminAuth } from '../middleware/adminAuth.js';
 import { fraudScanner } from '../middleware/fraudScanner.js';
 
 // Import Module Controllers / Validators / Services
-import { handleCheckout } from './checkout/checkout.controller.js';
+import { handleCheckout, handleCapturePayment } from './checkout/checkout.controller.js';
 import { validateCoordinates } from './geolocation/geofence.validator.js';
 import { GeofenceService } from './geolocation/geofence.service.js';
 import { PostService } from './posts/post.service.js';
@@ -17,8 +17,10 @@ import authRoutes from './auth/auth.routes.js';
 import oauthRoutes from './auth/oauth.routes.js';
 import paymentsRoutes from './payments/payments.routes.js';
 import orderRoutes from './orders/order.routes.js';
+import deliveryReceiptRoutes from './orders/deliveryReceipt.routes.js';
 import escrowRoutes from './payments/escrow.routes.js';
 import withdrawalRoutes from './payments/withdrawal.routes.js';
+import productRoutes from './products/product.routes.js';
 
 const apiRouter = Router();
 
@@ -41,6 +43,7 @@ apiRouter.use('/', oauthRoutes);
 // 1. CHECKOUT ROUTES (Protected by Fraud Engine)
 // ==========================================
 apiRouter.post('/checkout', fraudScanner, handleCheckout);
+apiRouter.post('/checkout/capture-payment', fraudScanner, handleCapturePayment);
 
 // ==========================================
 // 2. PAYMENTS ROUTES (PayPal integration)
@@ -61,6 +64,16 @@ apiRouter.use('/withdrawals', withdrawalRoutes);
 // 3. ORDER ROUTES
 // ==========================================
 apiRouter.use('/orders', orderRoutes);
+
+// ==========================================
+// 3b. PRODUCT ROUTES (Vendor Catalog)
+// ==========================================
+apiRouter.use('/products', productRoutes);
+
+// ==========================================
+// 3c. DELIVERY RECEIPT ROUTES (Proof of Delivery)
+// ==========================================
+apiRouter.use('/delivery', deliveryReceiptRoutes);
 
 // ==========================================
 // 4. GEOLOCATION ROUTES

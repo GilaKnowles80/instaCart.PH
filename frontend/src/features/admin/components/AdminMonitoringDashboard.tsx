@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export const AdminMonitoringDashboard: React.FC<{ token: string }> = ({ token }) => {
+export const AdminMonitoringDashboard: React.FC<{ token?: string }> = ({ token = "" }) => {
   const [activeTab, setActiveTab] = useState<'users' | 'compliance' | 'complaints' | 'notifications'>('users');
   const [users, setUsers] = useState<any[]>([]);
   const [complianceRecords, setComplianceRecords] = useState<any[]>([]);
@@ -21,6 +21,8 @@ export const AdminMonitoringDashboard: React.FC<{ token: string }> = ({ token })
       setter(data.users || data.records || data.complaints || data.notifications || []);
     } catch (err: any) {
       setError(err.message || 'Failed to load data');
+      // Set empty arrays as fallback so page doesn't show blank
+      setter([]);
     }
   };
 

@@ -6,6 +6,7 @@ import { useBasket } from '../../basket/context/BasketContext';
 
 type VendorProduct = {
   id: string;
+  vendorId: string;
   name: string;
   price: number;
   vendorName: string;
@@ -91,8 +92,8 @@ const vendorSpaces: VendorSpace[] = [
     accent: '#16834b',
     categories: ['Wet Market', 'Fresh Produce'],
     products: [
-      { id: 'p1', name: 'Fresh Bangus (Milkfish)', price: 180, vendorName: 'Quinta Wet Market', categories: ['Wet Market', 'Fresh Produce'] },
-      { id: 'p3', name: 'Pork Liempo 1kg', price: 340, vendorName: 'Quinta Wet Market', categories: ['Wet Market', 'Halal Meat', 'Wholesale'] }
+      { id: 'p1', vendorId: 'vendor_wet_market', name: 'Fresh Bangus (Milkfish)', price: 180, vendorName: 'Quinta Wet Market', categories: ['Wet Market', 'Fresh Produce'] },
+      { id: 'p3', vendorId: 'vendor_wet_market', name: 'Pork Liempo 1kg', price: 340, vendorName: 'Quinta Wet Market', categories: ['Wet Market', 'Halal Meat', 'Wholesale'] }
     ]
   },
   {
@@ -103,7 +104,7 @@ const vendorSpaces: VendorSpace[] = [
     accent: '#1469a8',
     categories: ['Pharmacy Vendors'],
     products: [
-      { id: 'p2', name: 'Amoxicillin 500mg', price: 12, vendorName: 'Mercury Express Pharmacy', categories: ['Pharmacy Vendors'] }
+      { id: 'p2', vendorId: 'vendor_pharmacy', name: 'Amoxicillin 500mg', price: 12, vendorName: 'Mercury Express Pharmacy', categories: ['Pharmacy Vendors'] }
     ]
   },
   {
@@ -114,7 +115,7 @@ const vendorSpaces: VendorSpace[] = [
     accent: '#7a3e9d',
     categories: ['Department Stores', 'Supermarkets'],
     products: [
-      { id: 'p4', name: 'Kitchen Storage Set', price: 499, vendorName: 'Metro Department Store', categories: ['Department Stores', 'Supermarkets'] }
+      { id: 'p4', vendorId: 'vendor_department', name: 'Kitchen Storage Set', price: 499, vendorName: 'Metro Department Store', categories: ['Department Stores', 'Supermarkets'] }
     ]
   },
   {
@@ -125,7 +126,7 @@ const vendorSpaces: VendorSpace[] = [
     accent: '#d96d0b',
     categories: ['Hardwares', 'Wholesale'],
     products: [
-      { id: 'p5', name: 'Cordless Drill 12V', price: 1890, vendorName: 'BuildRight Hardware', categories: ['Hardwares', 'Wholesale'] }
+      { id: 'p5', vendorId: 'vendor_hardware', name: 'Cordless Drill 12V', price: 1890, vendorName: 'BuildRight Hardware', categories: ['Hardwares', 'Wholesale'] }
     ]
   }
 ];

@@ -237,6 +237,99 @@ CREATE INDEX IF NOT EXISTS idx_orders_payment_status ON orders(payment_status);
 CREATE INDEX IF NOT EXISTS idx_orders_driver_id ON orders(driver_id);
 
 -- ==========================================
+-- 13b. PRODUCTS TABLE (Vendor Catalog)
+-- ==========================================
+-- Each product is tied to a specific vendor_id for inventory isolation.
+-- Prevents cross-vendor inventory tampering per the marketplace architecture.
+CREATE TABLE IF NOT EXISTS products (
+  id VARCHAR(50) PRIMARY KEY,
+  vendor_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  category VARCHAR(100) NOT NULL,
+  price NUMERIC(12,2) NOT NULL DEFAULT 0,
+  stock_quantity INTEGER NOT NULL DEFAULT 0,
+  min_stock_alert INTEGER DEFAULT 5,
+  images JSONB DEFAULT '[]'::jsonb,
+  is_active BOOLEAN DEFAULT TRUE,
+  is_featured BOOLEAN DEFAULT FALSE,
+  weight_kg NUMERIC(6,3),
+  dimensions_cm JSONB,
+  sku VARCHAR(100),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_products_vendor_id ON products(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
+CREATE INDEX IF NOT EXISTS idx_products_is_active ON products(is_active);
+CREATE INDEX IF NOT EXISTS idx_products_sku ON products(sku);
+
+-- ==========================================
+-- 13c. ORDER ITEMS TABLE (Multi-Vendor Order Splitting)
+-- ==========================================
+-- Each order item is tied to a specific vendor_id, enabling per-vendor
+-- fulfillment tracking and escrow splits for multi-vendor carts.
+CREATE TABLE IF NOT EXISTS order_items (
+  id VARCHAR(50) PRIMARY KEY,
+  order_id VARCHAR(50) NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id VARCHAR(50) REFERENCES products(id) ON DELETE SET NULL,
+  vendor_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vendor_name VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  price NUMERIC(12,2) NOT NULL DEFAULT 0,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  subtotal NUMERIC(12,2) NOT NULL DEFAULT 0,
+  status VARCHAR(50) DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_vendor_id ON order_items(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_status ON order_items(status);
+
+-- ==========================================
+-- 13d. INVENTORY TRANSACTIONS TABLE (Stock Audit Log)
+-- ==========================================
+-- Immutable audit trail for all stock adjustments (reserve, release, deduct, restock).
+CREATE TABLE IF NOT EXISTS inventory_transactions (
+  id VARCHAR(50) PRIMARY KEY,
+  product_id VARCHAR(50) NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  vendor_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type VARCHAR(50) NOT NULL, -- 'reserve' | 'release' | 'deduct' | 'restock' | 'adjust'
+  quantity_change INTEGER NOT NULL,
+  reference_type VARCHAR(50), -- 'order' | 'manual' | 'restock'
+  reference_id VARCHAR(50),
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_transactions_product_id ON inventory_transactions(product_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_transactions_vendor_id ON inventory_transactions(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_transactions_type ON inventory_transactions(type);
+CREATE INDEX IF NOT EXISTS idx_inventory_transactions_created_at ON inventory_transactions(created_at);
+
+-- ==========================================
+-- 13e. DELIVERY RECEIPTS TABLE (Proof of Delivery)
+-- ==========================================
+-- Vendors upload delivery receipts/tracking notes for fulfilled orders.
+CREATE TABLE IF NOT EXISTS delivery_receipts (
+  id VARCHAR(50) PRIMARY KEY,
+  order_id VARCHAR(50) NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  vendor_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  receipt_url VARCHAR(500) NOT NULL,
+  tracking_number VARCHAR(255),
+  delivery_notes TEXT,
+  delivered_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_delivery_receipts_order_id ON delivery_receipts(order_id);
+CREATE INDEX IF NOT EXISTS idx_delivery_receipts_vendor_id ON delivery_receipts(vendor_id);
+
+-- ==========================================
 -- 14. WITHDRAWALS TABLE
 -- ==========================================
 CREATE TABLE IF NOT EXISTS withdrawals (

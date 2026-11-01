@@ -1,23 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
 
-export type AuthRole = 'customer' | 'vendor' | 'admin';
+export type AuthRole = 'customer' | 'delivery_driver' | 'vendor' | 'admin' | 'retailer' | 'wholesaler';
 
 const ROLE_CONFIG: Record<AuthRole, { label: string; icon: string; color: string }> = {
   customer: { label: 'Customer', icon: '🛒', color: '#16834b' },
-  vendor: { label: 'Vendor / Seller', icon: '🏪', color: '#1469a8' },
+  delivery_driver: { label: 'Driver / Delivery', icon: '🚚', color: '#1469a8' },
+  vendor: { label: 'Vendor / Seller', icon: '🏪', color: '#1e40af' },
   admin: { label: 'Admin / Platform', icon: '🛡️', color: '#7a3e9d' },
+  retailer: { label: 'Retailer Store', icon: '🏬', color: '#e67e22' },
+  wholesaler: { label: 'Wholesaler Store', icon: '🏭', color: '#f39c12' },
 };
 
 interface AuthPageProps {
-  onAuthenticated: (user: { id: string; email: string; role: string }) => void;
+  onAuthenticated?: (user: { id: string; email: string; role: string }) => void;
 }
 
 export const AuthPage: React.FC<AuthPageProps> = ({ onAuthenticated }) => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [role, setRole] = useState<AuthRole>('customer');
   const [view, setView] = useState<'role-picker' | 'form'>('role-picker');
+
+  useEffect(() => {
+    const urlRole = searchParams.get('role') as AuthRole;
+    const urlMode = searchParams.get('mode') as 'login' | 'register';
+    if (urlRole && ROLE_CONFIG[urlRole]) {
+      setRole(urlRole);
+    }
+    if (urlMode) setMode(urlMode);
+    if (urlMode || urlRole) setView('form');
+  }, [searchParams]);
 
   const handleRoleSelect = (r: AuthRole) => {
     setRole(r);
@@ -25,11 +41,31 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthenticated }) => {
   };
 
   const handleBack = () => {
-    setView('role-picker');
+    if (view === 'form') {
+      setView('role-picker');
+    } else {
+      navigate('/choose-role');
+    }
   };
 
   const handleAuthSuccess = (user: { id: string; email: string; role: string }) => {
-    onAuthenticated(user);
+    if (onAuthenticated) {
+      onAuthenticated(user);
+    }
+    switch (user.role) {
+      case 'admin':
+        navigate('/admin');
+        break;
+      case 'vendor':
+        navigate('/vendor');
+        break;
+      case 'delivery_driver':
+        navigate('/driver');
+        break;
+      default:
+        navigate('/customer');
+        break;
+    }
   };
 
   if (view === 'role-picker') {
@@ -37,7 +73,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthenticated }) => {
       <div style={styles.page}>
         <div style={styles.card}>
           <div style={styles.header}>
-            <div style={styles.logo}>instaCart.PH</div>
+            <div style={styles.logo}>
+          <img src="/assets/logos/logo-main.png" alt="instaCart.PH" style={styles.logoImg} />
+          <span style={{ fontSize: 18, fontWeight: 800, color: '#16834b', letterSpacing: '-0.5px' }}>instaCart.PH</span>
+        </div>
             <h1 style={styles.title}>Welcome to instaCart.PH</h1>
             <p style={styles.subtitle}>
               Choose your account type to Sign In or Register.
@@ -152,12 +191,14 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: 32,
   },
   logo: {
-    display: 'inline-block',
-    fontSize: 20,
-    fontWeight: 800,
-    color: '#16834b',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 12,
-    letterSpacing: '-0.5px',
+  },
+  logoImg: {
+    width: 32,
+    height: 32,
   },
   title: {
     margin: '0 0 8px 0',
@@ -172,7 +213,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   roleGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: 12,
     marginBottom: 24,
   },

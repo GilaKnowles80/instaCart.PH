@@ -17,7 +17,18 @@ export const BasketDrawer: React.FC = () => {
             </li>)}
           </ul>
           <strong style={{ display: 'block', margin: '18px 0' }}>Subtotal: PHP {getCartTotal().toFixed(2)}</strong>
-          <CheckoutButton cartItems={cart} userId="user_demo_123" onSuccess={() => clearCart()} />
+          <CheckoutButton
+            cartItems={cart}
+            userId="user_demo_123"
+            customerName="Demo User"
+            customerAddress="123 Main St, Metro Manila"
+            customerLatitude={14.5995}
+            customerLongitude={120.9842}
+            onSuccess={(order) => {
+              console.log('Order placed:', order);
+              clearCart();
+            }}
+          />
         </>
       )}
     </aside>

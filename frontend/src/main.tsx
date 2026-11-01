@@ -1,19 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
-import { AuthProvider } from './features/auth/auth.context';
+import { App } from './App';
 import './index.css';
 
-const rootElement = document.getElementById('root');
-
-if (!rootElement) {
-  throw new Error('The application root element was not found.');
-}
-
-ReactDOM.createRoot(rootElement).render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <App />
   </React.StrictMode>
 );

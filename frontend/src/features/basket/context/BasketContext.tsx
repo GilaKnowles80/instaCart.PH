@@ -7,6 +7,7 @@ interface BasketContextValue {
   removeFromCart: (id: string) => void;
   clearCart: () => void;
   getCartTotal: () => number;
+  getCartByVendor: () => Map<string, ICartItem[]>;
 }
 
 const BasketContext = createContext<BasketContextValue | undefined>(undefined);
@@ -26,7 +27,17 @@ export const BasketProvider: React.FC<React.PropsWithChildren> = ({ children }) 
   const clearCart = () => setCart([]);
   const getCartTotal = () => cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
-  return <BasketContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, getCartTotal }}>{children}</BasketContext.Provider>;
+  const getCartByVendor = () => {
+    const grouped = new Map<string, ICartItem[]>();
+    for (const item of cart) {
+      const existing = grouped.get(item.vendorId) || [];
+      existing.push(item);
+      grouped.set(item.vendorId, existing);
+    }
+    return grouped;
+  };
+
+  return <BasketContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, getCartTotal, getCartByVendor }}>{children}</BasketContext.Provider>;
 };
 
 export const useBasket = (): BasketContextValue => {

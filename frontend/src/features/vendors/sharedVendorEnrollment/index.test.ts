@@ -53,9 +53,10 @@ describe('validateVendorEnrollment', () => {
       contactName: 'John Doe',
       email: 'john@test.com',
       phone: '09123456789',
+      operationalClass: 'wet-market' as const,
     },
     payout: {
-      provider: 'gcash',
+      provider: 'gcash' as const,
       accountName: 'John Doe',
       accountReference: '09123456789',
     },
